@@ -1,14 +1,14 @@
 package de.margul.awstutorials.springcloudfunction.springboot;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.function.context.FunctionCatalog;
 import org.springframework.cloud.function.web.RequestProcessor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-
+import de.margul.awstutorials.springcloudfunction.logic.DeleteEntityFunction;
 import de.margul.awstutorials.springcloudfunction.logic.GetEntityFunction;
-import de.margul.awstutorials.springcloudfunction.logic.StoreEntityFunction;
+import de.margul.awstutorials.springcloudfunction.logic.UpdateEntityFunction;
+import de.margul.awstutorials.springcloudfunction.logic.CreateEntityFunction;
 
 @SpringBootApplication
 public class SpringBootApp {
@@ -23,15 +23,28 @@ public class SpringBootApp {
     }
 
     @Bean
-    public StoreEntityFunction storeEntity() {
-        return new StoreEntityFunction();
+    public CreateEntityFunction createEntity() {
+        return new CreateEntityFunction();
     }
 
     @Bean
-    @Autowired
-    @Primary
-    public org.springframework.cloud.function.web.mvc.FunctionController getFunctionController(
-            RequestProcessor processor) {
-        return new FunctionController(processor);
+    public UpdateEntityFunction updateEntity() {
+        return new UpdateEntityFunction();
+    }
+
+    @Bean
+    public DeleteEntityFunction deleteEntity() {
+        return new DeleteEntityFunction();
+    }
+
+    @Bean
+    public RestfulFunctionController restfulFunctionController(RequestProcessor processor) {
+        return new RestfulFunctionController(processor);
+    }
+
+    @Bean
+    public RestfulFunctionHandlerMapping functionHandlerMapping(FunctionCatalog catalog,
+            RestfulFunctionController controller) {
+        return new RestfulFunctionHandlerMapping(catalog, controller);
     }
 }

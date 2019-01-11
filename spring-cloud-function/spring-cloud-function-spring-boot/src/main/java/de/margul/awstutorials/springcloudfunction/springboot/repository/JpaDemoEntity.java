@@ -13,6 +13,8 @@ public class JpaDemoEntity implements IDemoEntity {
     @Id
     private String name;
 
+    private String description;
+
     @Override
     public String getName() {
 
@@ -23,5 +25,17 @@ public class JpaDemoEntity implements IDemoEntity {
     public void setName(String name) {
 
         this.name = name;
+    }
+
+    @Override
+    public String getDescription() {
+
+        return description;
+    }
+
+    @Override
+    public void setDescription(String description) {
+
+        this.description = description;
     }
 }

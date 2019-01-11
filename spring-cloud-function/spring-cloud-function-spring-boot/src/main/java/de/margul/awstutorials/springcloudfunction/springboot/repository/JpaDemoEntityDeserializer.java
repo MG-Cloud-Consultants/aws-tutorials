@@ -14,10 +14,13 @@ public class JpaDemoEntityDeserializer extends JsonDeserializer<JpaDemoEntity> {
     public JpaDemoEntity deserialize(JsonParser jp, DeserializationContext ctxt)
             throws IOException, JsonProcessingException {
         JsonNode node = jp.getCodec().readTree(jp);
-        String itemName = node.get("name").asText();
-
         JpaDemoEntity entity = new JpaDemoEntity();
-        entity.setName(itemName);
+        if (node.has("name")) {
+            entity.setName(node.get("name").asText());
+        }
+        if (node.has("description")) {
+            entity.setDescription(node.get("description").asText());
+        }
 
         return entity;
     }

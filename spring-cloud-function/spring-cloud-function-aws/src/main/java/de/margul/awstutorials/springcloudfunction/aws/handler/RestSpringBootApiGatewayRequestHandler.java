@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package de.margul.awstutorials.springcloudfunction.aws.handler;
 
 import java.util.HashMap;
@@ -6,6 +22,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.function.adapter.aws.SpringBootRequestHandler;
 import org.springframework.cloud.function.context.catalog.FunctionInspector;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -16,6 +33,20 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * This class is a modification of
+ * {@link org.springframework.cloud.function.adapter.aws.SpringBootApiGatewayRequestHandler},
+ * implemented by Dave Syer and Oleg Zhurakousky and published under Apache 2.0
+ * License.
+ * 
+ * Modifications are as follows: - Modified
+ * {@link #convertEvent(APIGatewayProxyRequestEvent) convertEvent} method in the
+ * way that is also can handle events without body (which is the case for GET
+ * and DELETE requests) - Modified
+ * {@link #getHeaders(APIGatewayProxyRequestEvent) getHeaders} method in the way
+ * that now also extracts HTTP method, query as well as path parameters from the
+ * request event)
+ */
 public class RestSpringBootApiGatewayRequestHandler
         extends SpringBootRequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
@@ -25,6 +56,9 @@ public class RestSpringBootApiGatewayRequestHandler
     @Autowired
     private FunctionInspector inspector;
 
+    @Autowired
+    ApplicationContext ctx;
+
     public RestSpringBootApiGatewayRequestHandler(Class<?> configurationClass) {
         super(configurationClass);
     }
@@ -33,7 +67,6 @@ public class RestSpringBootApiGatewayRequestHandler
         super();
     }
 
-    @Override
     protected Object convertEvent(APIGatewayProxyRequestEvent event) {
 
         Object body = "";
@@ -65,13 +98,13 @@ public class RestSpringBootApiGatewayRequestHandler
         if (event.getHeaders() != null) {
             headers.putAll(event.getHeaders());
         }
-        headers.put("httpMethod", event.getHttpMethod());
         if (event.getQueryStringParameters() != null) {
             headers.putAll(event.getQueryStringParameters());
         }
         if (event.getPathParameters() != null) {
             headers.putAll(event.getPathParameters());
         }
+        headers.put("httpMethod", event.getHttpMethod());
         headers.put("request", event);
         return new MessageHeaders(headers);
     }

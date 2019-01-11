@@ -14,10 +14,13 @@ public class DynamoDemoEntityDeserializer extends JsonDeserializer<DynamoDemoEnt
     public DynamoDemoEntity deserialize(JsonParser jp, DeserializationContext ctxt)
             throws IOException, JsonProcessingException {
         JsonNode node = jp.getCodec().readTree(jp);
-        String itemName = node.get("name").asText();
-
         DynamoDemoEntity entity = new DynamoDemoEntity();
-        entity.setName(itemName);
+        if (node.has("name")) {
+            entity.setName(node.get("name").asText());
+        }
+        if (node.has("description")) {
+            entity.setDescription(node.get("description").asText());
+        }
 
         return entity;
     }

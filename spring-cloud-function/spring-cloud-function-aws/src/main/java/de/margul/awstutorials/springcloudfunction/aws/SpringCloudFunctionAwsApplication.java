@@ -4,8 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import de.margul.awstutorials.springcloudfunction.logic.DeleteEntityFunction;
 import de.margul.awstutorials.springcloudfunction.logic.GetEntityFunction;
-import de.margul.awstutorials.springcloudfunction.logic.StoreEntityFunction;
+import de.margul.awstutorials.springcloudfunction.logic.UpdateEntityFunction;
+import de.margul.awstutorials.springcloudfunction.logic.CreateEntityFunction;
 
 @SpringBootApplication
 public class SpringCloudFunctionAwsApplication {
@@ -15,12 +17,22 @@ public class SpringCloudFunctionAwsApplication {
     }
 
     @Bean
-    public GetEntityFunction getQueryFunction() {
+    public GetEntityFunction getEntityFunction() {
         return new GetEntityFunction();
     }
 
     @Bean
-    public StoreEntityFunction getStoreFunction() {
-        return new StoreEntityFunction();
+    public CreateEntityFunction createEntityFunction() {
+        return new CreateEntityFunction();
+    }
+
+    @Bean
+    public UpdateEntityFunction updateEntityFunction() {
+        return new UpdateEntityFunction();
+    }
+
+    @Bean
+    public DeleteEntityFunction deleteEntityFunction() {
+        return new DeleteEntityFunction();
     }
 }
