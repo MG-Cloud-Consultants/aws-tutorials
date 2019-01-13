@@ -25,7 +25,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-function-dependencies</artifactId>
-				<version>2.0.0.RC3</version>
+				<version>2.0.0.RELEASE</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -43,16 +43,6 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<repositories>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 	<modules>
 		<module>spring-cloud-function-logic</module>
 		<module>spring-cloud-function-aws</module>
