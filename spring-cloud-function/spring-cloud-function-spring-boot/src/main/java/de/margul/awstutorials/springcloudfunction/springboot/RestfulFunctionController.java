@@ -17,11 +17,12 @@ package de.margul.awstutorials.springcloudfunction.springboot;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import org.reactivestreams.Publisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.function.web.RequestProcessor;
 import org.springframework.cloud.function.web.RequestProcessor.FunctionWrapper;
 import org.springframework.cloud.function.web.constants.WebRequestConstants;
@@ -43,11 +44,11 @@ import reactor.core.publisher.Mono;
  * implemented by Dave Syer and Mark Fisher and published under Apache 2.0
  * License.
  * 
- * Modifications are as follows: - Added mappings for PUT and DELETE requests -
- * Removed mappings for streamings - Modified {@link #get(WebRequest) get}
- * method in the way that is also calls
- * {@link org.springframework.cloud.function.web.RequestProcessor#post(FunctionWrapper, String, boolean)
- * post}
+ * Modifications are as follows:
+ * - Added mappings for PUT and DELETE requests
+ * - Removed mappings for streamings
+ * - Modified {@link #get(WebRequest) get} method in the way that is also calls {@link org.springframework.cloud.function.web.RequestProcessor#post(FunctionWrapper, String, boolean) post}
+ * - Modified {@link #wrapper(WebRequest) in a way that it now splits the request URL and considers all parts as path parameters
  */
 @Component
 public class RestfulFunctionController {
@@ -86,6 +87,9 @@ public class RestfulFunctionController {
         return processor.post(wrapper, body, false);
     }
 
+    @Value("${spring.cloud.function.web.pathparametermappings}")
+    private String[] pathParameterMappings;
+
     private FunctionWrapper wrapper(WebRequest request) {
         @SuppressWarnings("unchecked")
         Function<Publisher<?>, Publisher<?>> function = (Function<Publisher<?>, Publisher<?>>) request
@@ -99,6 +103,10 @@ public class RestfulFunctionController {
         FunctionWrapper wrapper = RequestProcessor.wrapper(function, consumer, supplier);
         for (String key : request.getParameterMap().keySet()) {
             wrapper.params().addAll(key, Arrays.asList(request.getParameterValues(key)));
+            
+            // Add params also to headers (as we want to be query params to be available
+            // later as headers of org.springframework.messaging.Message
+            wrapper.headers().addAll(key, Arrays.asList(request.getParameterValues(key)));
         }
         for (Iterator<String> keys = request.getHeaderNames(); keys.hasNext();) {
             String key = keys.next();
@@ -106,7 +114,15 @@ public class RestfulFunctionController {
         }
         String argument = (String) request.getAttribute(WebRequestConstants.ARGUMENT, WebRequest.SCOPE_REQUEST);
         if (argument != null) {
-            wrapper.headers().add("name", argument);
+
+            List<String> pathParameters = Arrays.asList(argument.split("/"));
+            
+            // Add path parameters as headers. The mapping between position in the request
+            // URL and header name must be done as comma-separated list as the
+            // spring.cloud.function.web.pathparametermappings property
+            for (int i = 0; i < pathParameterMappings.length && i < pathParameters.size(); i++) {
+                wrapper.headers().add(pathParameterMappings[i], pathParameters.get(i));
+            }
         }
         return wrapper;
     }

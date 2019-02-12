@@ -9,9 +9,7 @@
         <artifactId>spring-cloud-function</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>de.margul.awstutorials</groupId>
     <artifactId>spring-cloud-function-spring-boot</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>spring-cloud-function-spring-boot</name>
     <url>http://maven.apache.org</url>
     <properties>
@@ -35,6 +33,11 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+        	<groupId>org.springframework.boot</groupId>
+        	<artifactId>spring-boot-configuration-processor</artifactId>
+        	<optional>true</optional>
         </dependency>
     </dependencies>
     <build>

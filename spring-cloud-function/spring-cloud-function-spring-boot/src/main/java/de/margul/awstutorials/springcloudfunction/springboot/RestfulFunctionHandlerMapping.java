@@ -37,7 +37,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 /**
  * This class is a modification of
- * {@link org.springframework.cloud.function.web.mvcorg.springframework.cloud.function.web.mvc},
+ * {@link org.springframework.cloud.function.web.mvc.FunctionHandlerMapping},
  * implemented by Dave Syer and published under Apache 2.0 License.
  * 
  * Modifications are as follows: - Added the methods

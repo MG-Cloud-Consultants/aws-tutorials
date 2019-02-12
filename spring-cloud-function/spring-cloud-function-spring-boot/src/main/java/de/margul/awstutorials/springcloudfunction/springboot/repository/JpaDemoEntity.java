@@ -7,7 +7,7 @@ import javax.persistence.Table;
 import de.margul.awstutorials.springcloudfunction.logic.IDemoEntity;
 
 @Entity
-@Table(name = "Person")
+@Table(name = "DemoEntity")
 public class JpaDemoEntity implements IDemoEntity {
 
     @Id
