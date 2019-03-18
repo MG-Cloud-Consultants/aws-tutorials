@@ -2,6 +2,7 @@ package de.margul.awstutorials.springcloudfunction.azure.handler;
 
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.function.adapter.azure.AzureSpringBootRequestHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -23,6 +25,9 @@ import reactor.core.publisher.Flux;
 
 public class HttpAzureSpringBootRequestHandler<I>
         extends AzureSpringBootRequestHandler<HttpRequestMessage<I>, HttpResponseMessage> {
+
+    @Value("${spring.cloud.function.azure.pathparametermappings}")
+    private String[] pathParameterMappings;
 
     private HttpRequestMessage<I> input;
 
@@ -86,17 +91,31 @@ public class HttpAzureSpringBootRequestHandler<I>
         if (event.getQueryParameters() != null) {
             headers.putAll(event.getQueryParameters());
         }
+
+        // Remove leading / by calling substring(1), otherwise we would get an empty
+        // first entry
+        List<String> pathParameters = Arrays.asList(event.getUri().getPath().substring(1).split("/"));
+
+        // Add path parameters as headers. The mapping between position in the request
+        // URL and header name must be done as comma-separated list as the
+        // spring.cloud.function.azure.pathparametermappings property
+        // Ignoring of URL-parts can be done with an empty-string entry
+        for (int i = 0; i < pathParameterMappings.length && i < pathParameters.size(); i++) {
+            if (!pathParameterMappings[i].equals("")) {
+                headers.put(pathParameterMappings[i], pathParameters.get(i));
+            }
+        }
         headers.put("httpMethod", event.getHttpMethod());
         headers.put("request", event);
         return new MessageHeaders(headers);
     }
 
     private Flux<?> extract(Function<?, ?> function, Object input) {
-        // if (!isSingleInput(function, input)) {
-        if (input instanceof Collection) {
-            return Flux.fromIterable((Iterable<?>) input);
+        if (!isSingleInput(function, input)) {
+            if (input instanceof Collection) {
+                return Flux.fromIterable((Iterable<?>) input);
+            }
         }
-        // }
         return Flux.just(input);
     }
 
