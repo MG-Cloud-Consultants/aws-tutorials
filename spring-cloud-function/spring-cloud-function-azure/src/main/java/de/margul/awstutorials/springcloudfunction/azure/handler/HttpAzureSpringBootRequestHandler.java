@@ -16,12 +16,31 @@ import org.springframework.cloud.function.adapter.azure.AzureSpringBootRequestHa
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.web.context.request.WebRequest;
 
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
 
 import reactor.core.publisher.Flux;
+
+/**
+ * This class is a modification of
+ * {@link org.springframework.cloud.function.adapter.azure.AzureSpringBootRequestHandler
+ * AzureSpringBootRequestHandler}, implemented by Soby Chacko and published
+ * under Apache 2.0 License.
+ * 
+ * Modifications are as follows: - Parameterized class with
+ * HttpRequestMessage and HttpResponseMessage - Modified
+ * {@link #convertEvent(HttpRequestMessage) convertEvent} method in the way
+ * that it now handles HttpRequestMessage objects as input - Introduced a
+ * {@link #getHeaders(HttpRequestMessage) getHeaders} method which extracts
+ * headers, path and query parameters as well as the HTTP method from the
+ * HttpRequestMessage and creates a
+ * {@link org.springframework.messaging.MessageHeaders MessageHeaders} with that
+ * - Modified {@link #convertOutput(Object) convertOutput} in a way that it now
+ * returns an HttpResponseMessage object
+ */
 
 public class HttpAzureSpringBootRequestHandler<I>
         extends AzureSpringBootRequestHandler<HttpRequestMessage<I>, HttpResponseMessage> {

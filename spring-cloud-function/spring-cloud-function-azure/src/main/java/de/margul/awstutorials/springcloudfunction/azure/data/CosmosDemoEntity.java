@@ -1,4 +1,4 @@
-package de.margul.awstutorials.springcloudfunction.azure.repository;
+package de.margul.awstutorials.springcloudfunction.azure.data;
 
 
 import org.springframework.data.annotation.Id;
@@ -7,7 +7,7 @@ import com.microsoft.azure.spring.data.cosmosdb.core.mapping.Document;
 
 import de.margul.awstutorials.springcloudfunction.logic.IDemoEntity;
 
-@Document(collection = "DemoEntity")
+@Document(collection = "demoentity")
 public class CosmosDemoEntity implements IDemoEntity {
 
     @Id

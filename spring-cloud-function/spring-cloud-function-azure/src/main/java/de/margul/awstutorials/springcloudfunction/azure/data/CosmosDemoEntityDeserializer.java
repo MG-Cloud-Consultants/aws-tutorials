@@ -1,4 +1,4 @@
-package de.margul.awstutorials.springcloudfunction.azure.repository;
+package de.margul.awstutorials.springcloudfunction.azure.data;
 
 import java.io.IOException;
 

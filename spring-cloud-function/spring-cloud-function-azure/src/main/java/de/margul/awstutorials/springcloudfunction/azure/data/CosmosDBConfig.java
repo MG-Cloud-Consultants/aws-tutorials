@@ -1,4 +1,4 @@
-package de.margul.awstutorials.springcloudfunction.azure.config;
+package de.margul.awstutorials.springcloudfunction.azure.data;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,27 +10,25 @@ import com.microsoft.azure.spring.data.cosmosdb.config.AbstractDocumentDbConfigu
 import com.microsoft.azure.spring.data.cosmosdb.config.DocumentDBConfig;
 import com.microsoft.azure.spring.data.cosmosdb.repository.config.EnableDocumentDbRepositories;
 
-import de.margul.awstutorials.springcloudfunction.azure.repository.CosmosDemoEntityDeserializer;
 import de.margul.awstutorials.springcloudfunction.logic.IDemoEntity;
 
 @Configuration
-//@EnableDocumentDbRepositories
-public class CosmosDBConfig {//extends AbstractDocumentDbConfiguration {
+@EnableDocumentDbRepositories
+public class CosmosDBConfig extends AbstractDocumentDbConfiguration {
 
-    //@Value("${azure.cosmosdb.uri}")
-    private String uri = "uri";
+    @Value("${azure.cosmosdb.uri}")
+    private String uri;
 
-    //@Value("${azure.cosmosdb.key}")
-    private String key ="key";
+    @Value("${azure.cosmosdb.key}")
+    private String key;
 
-    //@Value("${azure.cosmosdb.database}")
-    private String dbName = "db";
+    @Value("${azure.cosmosdb.database}")
+    private String dbName;
 
-    /*@Override
+    @Override
     public DocumentDBConfig getConfig() {
         return DocumentDBConfig.builder(uri, key, dbName).build();
-    }*/
-
+    }
 
     @Bean
     public Module dynamoDemoEntityDeserializer() {

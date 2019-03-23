@@ -1,4 +1,4 @@
-package de.margul.awstutorials.springcloudfunction.azure.repository;
+package de.margul.awstutorials.springcloudfunction.azure.data;
 
 import java.util.Optional;
 
@@ -11,38 +11,32 @@ import de.margul.awstutorials.springcloudfunction.logic.IDemoEntityDao;
 @Repository
 public class CosmosDemoEntityDao implements IDemoEntityDao {
 
-    //@Autowired
+    @Autowired
     private CosmosDemoEntityRepository repository;
 
     @Override
     public void createEntity(IDemoEntity entity) {
 
-        System.out.println("Created entity " + entity);
         repository.save((CosmosDemoEntity) entity);
     }
 
     @Override
     public Optional<IDemoEntity> getEntity(String name) {
 
-        CosmosDemoEntity entity = new CosmosDemoEntity();
-        entity.setName(name);
-        entity.setDescription("Description");
-        //Optional<CosmosDemoEntity> entity = repository.findById(name);
-        return Optional.of((IDemoEntity) entity);
+        Optional<CosmosDemoEntity> entity = repository.findById(name);
+        return Optional.of((IDemoEntity)entity.get());
     }
 
     @Override
     public void updateEntity(IDemoEntity entity) {
 
-        System.out.println("Updated entity " + entity);
-        //repository.save((CosmosDemoEntity) entity);
+        repository.save((CosmosDemoEntity) entity);
 
     }
 
     @Override
     public void deleteEntity(String name) {
 
-        System.out.println("Deleted entity with name " + name);
         repository.deleteById(name);
     }
 
