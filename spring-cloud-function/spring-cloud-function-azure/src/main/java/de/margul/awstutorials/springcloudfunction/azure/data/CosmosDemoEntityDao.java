@@ -39,5 +39,4 @@ public class CosmosDemoEntityDao implements IDemoEntityDao {
 
         repository.deleteById(name);
     }
-
 }

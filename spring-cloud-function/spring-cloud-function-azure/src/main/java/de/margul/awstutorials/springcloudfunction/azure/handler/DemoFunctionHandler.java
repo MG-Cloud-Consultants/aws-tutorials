@@ -9,7 +9,6 @@ import com.microsoft.azure.functions.HttpMethod;
 import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
-import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
@@ -20,19 +19,19 @@ import de.margul.awstutorials.springcloudfunction.logic.GetEntityFunction;
 import de.margul.awstutorials.springcloudfunction.logic.UpdateEntityFunction;
 
 @SpringBootApplication
-@ComponentScan(basePackages = { "de.margul.awstutorials.springcloudfunction.azure.repository" })
+@ComponentScan(basePackages = { "de.margul.awstutorials.springcloudfunction.azure.data" })
 public class DemoFunctionHandler extends HttpAzureSpringBootRequestHandler<CosmosDemoEntity> {
     @FunctionName("getEntityFunction")
     public HttpResponseMessage executeGet(@HttpTrigger(name = "req", methods = {
             HttpMethod.GET }, authLevel = AuthorizationLevel.ANONYMOUS, route = "entities/{name:regex(^[a-zA-Z0-9]*$)}") HttpRequestMessage<CosmosDemoEntity> request,
-            ExecutionContext context, @BindingName("name") String name) {
+            ExecutionContext context) {
         return handleRequest(request, context);
     }
 
     @FunctionName("deleteEntityFunction")
     public HttpResponseMessage executeDelete(@HttpTrigger(name = "req", methods = {
             HttpMethod.DELETE }, authLevel = AuthorizationLevel.ANONYMOUS, route = "entities/{name:regex(^[a-zA-Z0-9]*$)}") HttpRequestMessage<CosmosDemoEntity> request,
-            ExecutionContext context, @BindingName("name") String name) {
+            ExecutionContext context) {
         return handleRequest(request, context);
     }
 
@@ -46,7 +45,7 @@ public class DemoFunctionHandler extends HttpAzureSpringBootRequestHandler<Cosmo
     @FunctionName("updateEntityFunction")
     public HttpResponseMessage executeUpdate(@HttpTrigger(name = "req", methods = {
             HttpMethod.PUT }, authLevel = AuthorizationLevel.ANONYMOUS, route = "entities/{name:regex(^[a-zA-Z0-9]*$)}") HttpRequestMessage<CosmosDemoEntity> request,
-            ExecutionContext context, @BindingName("name") String name) {
+            ExecutionContext context) {
         return handleRequest(request, context);
     }
 

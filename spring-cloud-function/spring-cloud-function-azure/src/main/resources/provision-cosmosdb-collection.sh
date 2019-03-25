@@ -23,8 +23,8 @@ key=$(az cosmosdb list-keys \
   --query primaryMasterKey \
   --output tsv)
 
-# Configure function app settings to use the Azure Cosmos DB connection string.
+# Set Azure Cosmos DB connection parameters as environment variables.
 az functionapp config appsettings set \
   --name $functionAppName \
   --resource-group $resourceGroupe \
-  --setting CosmosDB_Endpoint=$endpoint CosmosDB_Key=$key
+  --setting CosmosDB_Endpoint=$endpoint CosmosDB_Key=$key CosmosDB_Collection=$collectionName

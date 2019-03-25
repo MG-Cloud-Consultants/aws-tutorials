@@ -1,6 +1,5 @@
 package de.margul.awstutorials.springcloudfunction.azure.data;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,18 +15,10 @@ import de.margul.awstutorials.springcloudfunction.logic.IDemoEntity;
 @EnableDocumentDbRepositories
 public class CosmosDBConfig extends AbstractDocumentDbConfiguration {
 
-    @Value("${azure.cosmosdb.uri}")
-    private String uri;
-
-    @Value("${azure.cosmosdb.key}")
-    private String key;
-
-    @Value("${azure.cosmosdb.database}")
-    private String dbName;
-
     @Override
     public DocumentDBConfig getConfig() {
-        return DocumentDBConfig.builder(uri, key, dbName).build();
+        return DocumentDBConfig.builder(System.getenv("CosmosDB_Endpoint"), System.getenv("CosmosDB_Key"),
+                System.getenv("CosmosDB_Collection")).build();
     }
 
     @Bean

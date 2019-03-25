@@ -24,5 +24,4 @@ public class CosmosDemoEntityDeserializer extends JsonDeserializer<CosmosDemoEnt
 
         return entity;
     }
-
 }

@@ -16,8 +16,6 @@ import org.springframework.cloud.function.adapter.azure.AzureSpringBootRequestHa
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.GenericMessage;
-import org.springframework.web.context.request.WebRequest;
-
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
@@ -60,8 +58,8 @@ public class HttpAzureSpringBootRequestHandler<I>
 
     @Override
     public HttpResponseMessage handleRequest(HttpRequestMessage<I> input, ExecutionContext context) {
-        String name = null;
         this.input = input;
+        String name = null;
         try {
             if (context != null) {
                 name = context.getFunctionName();
@@ -93,7 +91,7 @@ public class HttpAzureSpringBootRequestHandler<I>
 
     @SuppressWarnings("rawtypes")
     @Override
-    protected Object convertEvent(HttpRequestMessage<I> event) {
+    protected GenericMessage convertEvent(HttpRequestMessage<I> event) {
 
         if (event.getBody() != null) {
             return new GenericMessage<I>(event.getBody(), getHeaders(event));
