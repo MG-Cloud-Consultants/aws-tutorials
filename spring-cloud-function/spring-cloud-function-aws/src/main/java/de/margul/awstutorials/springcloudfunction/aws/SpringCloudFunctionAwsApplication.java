@@ -2,7 +2,10 @@ package de.margul.awstutorials.springcloudfunction.aws;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.margul.awstutorials.springcloudfunction.logic.DeleteEntityFunction;
 import de.margul.awstutorials.springcloudfunction.logic.GetEntityFunction;
@@ -34,5 +37,11 @@ public class SpringCloudFunctionAwsApplication {
     @Bean
     public DeleteEntityFunction deleteEntityFunction() {
         return new DeleteEntityFunction();
+    }
+    
+    @Bean
+    @ConditionalOnMissingBean//(name="jacksonObjectMapper")
+    public ObjectMapper defaultObjectMapper() {
+        return new ObjectMapper();
     }
 }
