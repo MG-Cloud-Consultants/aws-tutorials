@@ -16,9 +16,12 @@
 
 package de.margul.awstutorials.springcloudfunction.aws.handler;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
+import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.function.adapter.aws.SpringBootRequestHandler;
 import org.springframework.cloud.function.context.catalog.FunctionInspector;
@@ -28,10 +31,12 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.GenericMessage;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import reactor.core.publisher.Flux;
 
 /**
  * This class is a modification of
@@ -45,7 +50,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * and DELETE requests) - Modified
  * {@link #getHeaders(APIGatewayProxyRequestEvent) getHeaders} method in the way
  * that now also extracts HTTP method, query as well as path parameters from the
- * request event)
+ * request event) - Modified {@link #result(Object, Publisher<?>) result} in the
+ * way that it returns an APIGatewayProxyResponseEvent, even if the called
+ * function was a Consumer, i. e. didn't return any results
  */
 public class RestSpringBootApiGatewayRequestHandler
         extends SpringBootRequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -65,6 +72,14 @@ public class RestSpringBootApiGatewayRequestHandler
 
     public RestSpringBootApiGatewayRequestHandler() {
         super();
+    }
+
+    @Override
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
+        initialize();
+        Object input = convertEvent(event);
+        Publisher<?> output = apply(extract(input));
+        return result(input, output);
     }
 
     protected Object convertEvent(APIGatewayProxyRequestEvent event) {
@@ -121,6 +136,28 @@ public class RestSpringBootApiGatewayRequestHandler
                     .withBody(serializeBody(output));
 
         }
+    }
+
+    private APIGatewayProxyResponseEvent result(Object input, Publisher<?> output) {
+        List<Object> result = new ArrayList<>();
+        for (Object value : Flux.from(output).toIterable()) {
+            result.add(value);
+        }
+        if (isSingleValue(input) && result.size() == 1) {
+            return (APIGatewayProxyResponseEvent) convertOutput(result.get(0));
+        }
+        return (APIGatewayProxyResponseEvent) convertOutput(result);
+    }
+
+    private Flux<?> extract(Object input) {
+        if (input instanceof Collection) {
+            return Flux.fromIterable((Iterable<?>) input);
+        }
+        return Flux.just(input);
+    }
+
+    private boolean isSingleValue(Object input) {
+        return !(input instanceof Collection);
     }
 
     private boolean functionReturnsMessage(Object output) {
