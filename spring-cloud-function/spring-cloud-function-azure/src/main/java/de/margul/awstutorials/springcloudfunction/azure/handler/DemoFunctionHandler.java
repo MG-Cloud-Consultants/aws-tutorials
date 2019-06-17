@@ -2,6 +2,7 @@ package de.margul.awstutorials.springcloudfunction.azure.handler;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.function.adapter.azure.AzureSpringBootHttpRequestHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import com.microsoft.azure.functions.ExecutionContext;
@@ -20,7 +21,7 @@ import de.margul.awstutorials.springcloudfunction.logic.UpdateEntityFunction;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "de.margul.awstutorials.springcloudfunction.azure.data" })
-public class DemoFunctionHandler extends HttpAzureSpringBootRequestHandler<CosmosDemoEntity> {
+public class DemoFunctionHandler extends AzureSpringBootHttpRequestHandler<CosmosDemoEntity> {
     @FunctionName("getEntityFunction")
     public HttpResponseMessage executeGet(@HttpTrigger(name = "req", methods = {
             HttpMethod.GET }, authLevel = AuthorizationLevel.ANONYMOUS, route = "entities/{name:regex(^[a-zA-Z0-9]*$)}") HttpRequestMessage<CosmosDemoEntity> request,

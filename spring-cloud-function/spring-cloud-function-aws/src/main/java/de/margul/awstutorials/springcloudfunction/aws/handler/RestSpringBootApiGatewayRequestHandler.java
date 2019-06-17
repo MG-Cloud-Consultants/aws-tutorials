@@ -16,10 +16,8 @@
 
 package de.margul.awstutorials.springcloudfunction.aws.handler;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +74,7 @@ public class RestSpringBootApiGatewayRequestHandler
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
-        initialize();
+        initialize(context);
         Object input = convertEvent(event);
         Publisher<?> output = apply(extract(input));
         return result(input, output);
@@ -138,26 +136,11 @@ public class RestSpringBootApiGatewayRequestHandler
         }
     }
 
-    private APIGatewayProxyResponseEvent result(Object input, Publisher<?> output) {
-        List<Object> result = new ArrayList<>();
-        for (Object value : Flux.from(output).toIterable()) {
-            result.add(value);
-        }
-        if (isSingleValue(input) && result.size() == 1) {
-            return (APIGatewayProxyResponseEvent) convertOutput(result.get(0));
-        }
-        return (APIGatewayProxyResponseEvent) convertOutput(result);
-    }
-
     private Flux<?> extract(Object input) {
         if (input instanceof Collection) {
             return Flux.fromIterable((Iterable<?>) input);
         }
         return Flux.just(input);
-    }
-
-    private boolean isSingleValue(Object input) {
-        return !(input instanceof Collection);
     }
 
     private boolean functionReturnsMessage(Object output) {
