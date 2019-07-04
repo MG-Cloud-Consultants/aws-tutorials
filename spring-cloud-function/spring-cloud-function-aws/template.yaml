@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Globals:
+  Function:
+    Runtime: java8
+    Timeout: 180
+    MemorySize: 1024
+    Handler: de.margul.awstutorials.springcloudfunction.aws.handler.DemoFunctionHandler
+    Environment:
+      Variables:
+        TABLE_NAME: DemoEntity
+        MAIN_CLASS: de.margul.awstutorials.springcloudfunction.aws.SpringCloudFunctionAwsApplication
+  Api:
+    EndpointConfiguration: REGIONAL
+    #Cors: "'www.example.com'"
+
+  #SimpleTable:
+    #SSESpecification:
+      #SSEEnabled: true
+Resources:
+  DemoEntityTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+          Name: name
+          Type: String
+      TableName: DemoEntity
+  CreateEntityFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      #Runtime: java8
+      #Handler: de.margul.awstutorials.DemoFunctionHandler::handleRequest
+      #Timeout: 60
+      Description: Creates new demo entities
+      CodeUri: ./target/lambda.jar
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DemoEntityTable
+      Environment:
+        Variables:
+          FUNCTION_NAME: createEntityFunction
+      Events:
+        CreateEntityApi:
+          Type: Api
+          Properties:
+            Path: /entities
+            Method: POST
+  GetEntityFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: Fetch a demo entity by its name
+      Environment:
+        Variables:
+          FUNCTION_NAME: getEntityFunction
+      CodeUri: ./target/lambda.jar
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DemoEntityTable
+      Events:
+        GetEntityApi:
+          Type: Api
+          Properties:
+            Path: /entities/{name}
+            Method: GET
+  UpdateEntityFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: Update a demo entity by its name
+      Environment:
+        Variables:
+          FUNCTION_NAME: updateEntityFunction
+      CodeUri: ./target/lambda.jar
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DemoEntityTable
+      Events:
+        UpdateEntityApi:
+          Type: Api
+          Properties:
+            Path: /entities/{name}
+            Method: PUT
+  DeleteEntityFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: Delete a demo entity by its name
+      Environment:
+        Variables:
+          FUNCTION_NAME: deleteEntityFunction
+      CodeUri: ./target/lambda.jar
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DemoEntityTable
+      Events:
+        UpdateEntityApi:
+          Type: Api
+          Properties:
+            Path: /entities/{name}
+            Method: DELETE

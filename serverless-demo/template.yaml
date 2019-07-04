@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Globals:
+  Function:
+    Timeout: 60
+    Runtime: java8
+    CodeUri: ./
+    Environment: 
+      Variables:
+        # For local deployment, as SAM Local ignores everything different from Type: 'AWS::Serverless::Function'
+        TABLE_NAME: DemoEntity
+        # For a cloud deployment, uses the name of the 'AWS::Serverless::SimpleTable' defined below
+        #TABLE_NAME: !Ref DemoEntityTable
+        # Only for accessing a local DynamoDB instance
+        HOST: "http://dynamodb:8000"
+        REGION: "us-east-1"
+  Api:
+    EndpointConfiguration: REGIONAL
+    Name: "DemoAPI"
+Resources:
+  PostFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+    # For a cloud deployment
+    #Policies:
+    #  - DynamoDBCrudPolicy:
+    #      TableName: !Ref DemoEntityTable
+    Properties:
+      Handler: de.margul.awstutorials.sam.PostRequestHandler::handleRequest
+      Events:
+        ServerlessAppApi:
+          Type: Api
+          Properties:
+            Path: /entities
+            Method: POST
+  GetFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+    # For a cloud deployment
+    #Policies:
+    #  - DynamoDBReadPolicy:
+    #      TableName: !Ref DemoEntityTable
+    Properties:
+      Handler: de.margul.awstutorials.sam.GetRequestHandler::handleRequest
+      Events:
+        ServerlessAppApi:
+          Type: Api
+          Properties:
+            Path: /entities/{id}
+            Method: GET
+  PutFunction:
+    Type: 'AWS::Serverless::Function'
+    # For a cloud deployment
+    #Policies:
+    #  - DynamoDBCrudPolicy:
+    #      TableName: !Ref DemoEntityTable
+    Properties:
+      Handler: de.margul.awstutorials.sam.PutRequestHandler::handleRequest
+      Events:
+        ServerlessAppApi:
+          Type: Api
+          Properties:
+            Path: /entities/{id}
+            Method: PUT
+  DeleteFunction:
+    Type: 'AWS::Serverless::Function'
+    # For a cloud deployment
+    #Policies:
+    #  - DynamoDBCrudPolicy:
+    #      TableName: !Ref DemoEntityTable
+    Properties:
+      Handler: de.margul.awstutorials.sam.DeleteRequestHandler::handleRequest
+      Events:
+        ServerlessAppApi:
+          Type: Api
+          Properties:
+            Path: /entities/{id}
+            Method: DELETE
+  DemoEntityTable:
+    Type: 'AWS::Serverless::SimpleTable'
+    Properties:
+      PrimaryKey:
+          Name: id
+          Type: String
+      TableName: DemoEntity
