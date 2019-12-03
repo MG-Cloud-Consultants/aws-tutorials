@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  SchedulingActive:
+    Type: String
+    AllowedValues:
+      - ENABLED
+      - DISABLED
+    Default: ENABLED
+    Description: "Enable or disable scheduling (default: enabled)."
+  CronExpressionStart:
+    Type: String
+    Description: "Cron pattern for instance start event (in UTC) like "0 8 ? * MON-FRI *", see https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html for format."
+  CronExpressionStop:
+    Type: String
+    Description: "Cron pattern for instance stop event (in UTC) like "0 20 ? * MON-FRI *"", see https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html for format."
+  InstanceIds:
+    Type: List<AWS::EC2::Instance::Id>
+    Description: "List of instance IDs to be managed."
+Resources: 
+  CloudWatchEventsStartRule: 
+    Type: "AWS::Events::Rule"
+    Properties:
+      Description: "ScheduledRule"
+      ScheduleExpression: !Join ["", ["cron(", !Ref CronExpressionStart, ")"]]
+      State: !Ref SchedulingActive
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - "StartInstanceFunction"
+              - "Arn"
+          Id: "TargetFunctionV1"
+  CloudWatchEventsStopRule: 
+    Type: "AWS::Events::Rule"
+    Properties:
+      Description: "ScheduledRule"
+      ScheduleExpression: !Join ["", ["cron(", !Ref CronExpressionStop, ")"]]
+      State: !Ref SchedulingActive
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - "StopInstanceFunction"
+              - "Arn"
+          Id: "TargetFunctionV1"
+  PermissionForEventsToInvokeStartLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: "StartInstanceFunction"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "CloudWatchEventsStartRule"
+          - "Arn"
+  PermissionForEventsToInvokeStopLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: "StopInstanceFunction"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "CloudWatchEventsStopRule"
+          - "Arn"
+  StartInstanceFunction: 
+    Type: "AWS::Lambda::Function"
+    Properties: 
+      Environment:
+        Variables:
+          instances: !Join [ ",",  !Ref  InstanceIds ]
+      Handler: "index.handler"
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+          region = os.environ['AWS_REGION']
+          instances = os.environ['instances'].split(",")
+          ec2 = boto3.client('ec2', region_name=region)
+          def handler(event, context):
+            ec2.start_instances(InstanceIds=instances)
+      Handler: index.handler
+      Runtime: python3.6
+      Role: 
+        Fn::GetAtt: 
+          - "LambdaExecutionRole"
+          - "Arn"
+  StopInstanceFunction: 
+    Type: "AWS::Lambda::Function"
+    Properties: 
+      Environment:
+        Variables:
+          instances: !Join [ ",",  !Ref  InstanceIds ]
+      Handler: "index.handler"
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+          region = os.environ['AWS_REGION']
+          instances = os.environ['instances'].split(",")
+          ec2 = boto3.client('ec2', region_name=region)
+          def handler(event, context):
+            ec2.stop_instances(InstanceIds=instances)
+      Handler: index.handler
+      Runtime: python3.6
+      Role: 
+        Fn::GetAtt: 
+          - "LambdaExecutionRole"
+          - "Arn"
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"          
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+      - PolicyName: StartStopInstancesPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - "ec2:StartInstances"
+            - "ec2:StopInstances"
+            Resource:
+            - "arn:aws:ec2:*:*:instance/*"
+          - Effect: Allow
+            Action:
+            - "ec2:DescribeInstances"
+            Resource:
+            - "*"
